@@ -26,4 +26,14 @@ Add modules to the `src` directory.
 
 We use [Typescript](https://www.typescriptlang.org/) for this package. The community has [many handy documents and tutorials](https://www.typescriptlang.org/docs/) to learn Typescript. 
 
-We use [Jest testing framework](https://jestjs.io/) for this package. Do not forget to add `foo.test.js` to the `test` directory for the module `foo`.  
+We use [Jest testing framework](https://jestjs.io/) for this package. Do not forget to add `foo.test.js` to the `test` directory for the module `foo`. Look at the other files in this directory for the hints on the testing environment.  Then run 
+
+    npm test
+	
+to check everything is correct.
+
+Please add documentation for the added functionality.
+
+Then create a pull request.  We will be happy to work with you on it!
+
+Happy tree work!
