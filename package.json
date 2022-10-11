@@ -35,5 +35,8 @@
   "bugs": {
     "url": "https://github.com/chanzuckerberg/phylo-js/issues"
   },
-  "homepage": "https://github.com/chanzuckerberg/phylo-js#readme"
+  "homepage": "https://github.com/chanzuckerberg/phylo-js#readme",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
 }
