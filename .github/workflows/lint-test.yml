@@ -1,7 +1,7 @@
 name: Lint and Test
 
-# Runs linting and tests for a push to any branch.
-# TODO Actually implement running of linting and tests
+# Runs TS type checks, linting, and tests for a push to any branch.
+# TODO Actually implement TS type checks, linting, and tests
 # TODO Figure out a way to run lints/tests on forked repo PRs, but NOT expose
 # any kind of secrets (eg if we use a GitHub Action for NPM publishing).
 on: push
@@ -10,6 +10,15 @@ jobs:
   lint_and_test:
     runs-on: ubuntu-latest
     steps:
-      - name: Hello World
-        run: |
-          echo "yup, looks like it's running!"
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Node/NPM
+        uses: actions/setup-node@v3
+        with:
+          # Just picked what we've been using in local dev work
+          node-version: 18
+      - name: Install node modules
+        # `npm ci` tells npm to install matching against package-lock file
+        run: npm ci
+      - name: Lint code formatting
+        run: npm run lint-formatting-ci
