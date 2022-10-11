@@ -1,5 +1,5 @@
 import { TreeNodeType } from "./d";
-import { read_newick } from "./newickAdapter";
+import { readNewick } from "./newickAdapter";
 
 export class TreeNode {
   children: Array<TreeNodeType>; // direct descendents of this node
@@ -23,7 +23,7 @@ export class TreeNode {
     this.name = name ? name : "NoName";
 
     if (newick) {
-      read_newick(newick, this, format, quoted_node_names);
+      readNewick(newick, this, format, quoted_node_names);
     }
   }
 }
