@@ -24,7 +24,7 @@
     "typescript": "^4.8.3"
   },
   "author": "Sidney Bell",
-  "license": "MIT",
+  "license": "GPL3",
   "bugs": {
     "url": "https://github.com/chanzuckerberg/phylo-js/issues"
   },
