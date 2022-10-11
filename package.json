@@ -8,6 +8,8 @@
     ],
     "browser": "phylo-js.html",
     "scripts": {
+        "lint-formatting": "prettier --write .",
+        "lint-formatting-ci": "prettier --check .",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
