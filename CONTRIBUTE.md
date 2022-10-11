@@ -26,6 +26,8 @@ Add modules to the `src` directory.
 
 We use [Typescript](https://www.typescriptlang.org/) for this package. The community has [many handy documents and tutorials](https://www.typescriptlang.org/docs/) to learn Typescript. 
 
+We recommend [Google Typescript style guide](https://google.github.io/styleguide/tsguide.html) for this package. 
+
 We use [Jest testing framework](https://jestjs.io/) for this package. Do not forget to add `foo.test.js` to the `test` directory for the module `foo`. Look at the other files in this directory for the hints on the testing environment.  Then run 
 
     npm test
