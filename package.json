@@ -12,7 +12,8 @@
     "lint-code-ci": "eslint **/*.{ts,js}",
     "lint-formatting": "prettier --write .",
     "lint-formatting-ci": "prettier --check .",
-    "test": "jest"
+    "test": "jest",
+    "type-check": "tsc --noEmit"
   },
   "repository": {
     "type": "git",

@@ -22,7 +22,7 @@ jobs:
         run: npm ci
       # From here down is actual linting/testing of code.
       # We could run these in parallel for speed, but easiest to just run
-      # sequentially right now and makes subject of error a bit more readable.
+      # sequentially for now and it makes subject of error a bit more readable.
       - name: Lint code for syntax and problems
         run: npm run lint-code-ci
       - name: Lint code for styling
