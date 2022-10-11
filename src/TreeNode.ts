@@ -143,6 +143,134 @@ export class TreeNode {
     this[name] = undefined;
     delete this.features[name];
   }
+
+  addChild(child?, name?, dist?, support?) {
+    /*
+ :argument child: a TreeNode instance
+ :returns: the child node instance
+ **Examples:**
+ ::
+     t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+     t.add_child(TreeNode('E:1'))
+  */
+
+    if (!child || !(child instanceof TreeNode)) {
+      child = new TreeNode();
+    }
+
+    child.up = this;
+    child.name = name ? name : child.name;
+    child.dist = dist ? dist : child.dist;
+    child.support = support ? support : child.support;
+    this.children.push(child);
+    return child;
+  }
+
+  removeChild(child) {
+    /*
+ :argument child: a TreeNode instance
+ :returns: child (with parent set to null)
+ **Examples:**
+ ::
+     t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+     t.remove_child(t.children[0])
+  */
+    const childIndex = this.children.indexOf(child);
+    if (childIndex > -1) {
+      delete this.children[childIndex];
+      child.up = null;
+      return child;
+    } else {
+      throw "Error: child not found";
+    }
+  }
+
+  addSister(sister?, name?, dist?) {
+    /*
+ :argument sister: a TreeNode instance
+ :returns: the sister node instance
+  */
+    if (this.up === null) {
+      throw "Error: A parent node is required to add a sister";
+    } else {
+      return this.up.addChild(sister, name, dist);
+    }
+  }
+
+  remove_sister(sister) {
+    /*
+        Removes a sister node. It has the same effect as
+        **`TreeNode.up.remove_child(sister)`**
+        If a sister node is not supplied, the first sister will be deleted
+        and returned.
+        :argument sister: A node instance
+        :return: The node removed
+  */
+    if (this.up === null) {
+      throw "Error: A parent node is required to remove a sister";
+    }
+
+    const sisters = this.getSisters();
+    if (sisters.length > 0) {
+      if (!sister) {
+        return sisters.shift();
+      } else {
+        return this.up.removeChild(sister);
+      }
+    }
+  }
+
+  delete(prevent_nondicotomic = true, preserve_branch_length = false) {
+    /*
+        Deletes node from the tree structure. Notice that this method
+        makes 'disappear' the node from the tree structure. This means
+        that children from the deleted node are transferred to the
+        next available parent.
+        :param True prevent_nondicotomic: When True (default), delete
+            function will be execute recursively to prevent
+            single-child nodes.
+        :param False preserve_branch_length: If True, branch lengths
+            of the deleted nodes are transferred (summed up) to its
+            parent's branch, thus keeping original distances among
+            nodes.
+        **Example:**
+        ::
+                / C
+          root-|
+               |        / B
+                \--- H |
+                        \ A
+          > H.delete() will produce this structure:
+                / C
+               |
+          root-|--B
+               |
+                \ A
+  */
+
+    const parent = this.up;
+
+    if (parent) {
+      if (preserve_branch_length) {
+        if (this.children.length === 1) {
+          this.children[0].dist += this.dist;
+        } else if (this.children.length > 1) {
+          parent.dist += this.dist;
+        }
+      }
+
+      const children = this.children;
+      children.forEach((child: TreeNode) => {
+        parent.addChild(child);
+      });
+
+      parent.removeChild(this);
+    }
+
+    if (prevent_nondicotomic && parent && parent.children.length < 2) {
+      parent.delete(prevent_nondicotomic, preserve_branch_length);
+    }
+  }
 }
 // class Tree is an alias for TreeNode
 export class Tree extends TreeNode {}
