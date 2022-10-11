@@ -1,29 +1,29 @@
 {
-    "name": "phylo-js",
-    "version": "0.0.1",
-    "description": "A partial port of ETE3 toolkit to typescript to enable phylogenetics in the browser",
-    "keywords": [
-        "phylogenetics",
-        "trees"
-    ],
-    "browser": "phylo-js.html",
-    "scripts": {
-        "lint-formatting": "prettier --write .",
-        "lint-formatting-ci": "prettier --check .",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/chanzuckerberg/phylo-js.git"
-    },
-    "devDependencies": {
-        "prettier": "2.7.1",
-        "typescript": "^4.8.3"
-    },
-    "author": "Sidney Bell",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/chanzuckerberg/phylo-js/issues"
-    },
-    "homepage": "https://github.com/chanzuckerberg/phylo-js#readme"
+  "name": "phylo-js",
+  "version": "0.0.1",
+  "description": "A partial port of ETE3 toolkit to typescript to enable phylogenetics in the browser",
+  "keywords": [
+    "phylogenetics",
+    "trees"
+  ],
+  "browser": "phylo-js.html",
+  "scripts": {
+    "lint-formatting": "prettier --write .",
+    "lint-formatting-ci": "prettier --check .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chanzuckerberg/phylo-js.git"
+  },
+  "devDependencies": {
+    "prettier": "2.7.1",
+    "typescript": "^4.8.3"
+  },
+  "author": "Sidney Bell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chanzuckerberg/phylo-js/issues"
+  },
+  "homepage": "https://github.com/chanzuckerberg/phylo-js#readme"
 }
