@@ -11,7 +11,7 @@
     "lint-formatting": "prettier --write .",
     "lint-formatting-ci": "prettier --check .",
     "test": "jest"
-},
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chanzuckerberg/phylo-js.git"
