@@ -60,3 +60,6 @@ export class TreeNode {
     }
   }
 }
+
+// class Tree is an alias for TreeNode
+export class Tree extends TreeNode {}
