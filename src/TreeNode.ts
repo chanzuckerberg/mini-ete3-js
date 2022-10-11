@@ -1,11 +1,12 @@
 import { filter, find } from "lodash";
 import { readNewick } from "./newickAdapter";
+import {TreeError} from "./TreeError";
 
-DEFAULT_COMPACT = false;
-DEFAULT_SHOWINTERNAL = false;
-DEFAULT_DIST = "1.0";
-DEFAULT_SUPPORT = "1.0";
-DEFAULTNAME = "";
+const DEFAULT_COMPACT = false;
+const DEFAULT_SHOWINTERNAL = false;
+const DEFAULT_DIST = "1.0";
+const DEFAULT_SUPPORT = "1.0";
+const DEFAULTNAME = "";
 
 /**
   * TreeNode (Tree) class is used to store a tree structure. A tree
@@ -14,6 +15,7 @@ DEFAULTNAME = "";
   * format (newick).
   */
 export class TreeNode {
+  /** ATTRIBUTES **/
   children: Array<TreeNode>; // direct descendents of this node
   up: TreeNode | null; // parent node
   dist: number; // distance from the node to its parents (branchlength)
@@ -21,42 +23,42 @@ export class TreeNode {
   name: string;
   features: { [key: string]: any };
 
+
+/*
+  :argument newick: Path to the file containing the tree or, alternatively,
+      the text string containing the same information.
+  :argument format: subnewick format
+        ======  ==============================================
+        FORMAT  DESCRIPTION
+        ======  ==============================================
+        0        flexible with support values
+        1        flexible with internal node names
+        2        all branches + leaf names + internal supports
+        3        all branches + all names
+        4        leaf branches + leaf names
+        5        internal and leaf branches + leaf names
+        6        internal branches + leaf names
+        7        leaf branches + all names
+        8        all names
+        9        leaf names
+        100      topology only
+        ======  ==============================================
+  :returns: a tree node object which represents the base of the tree.
+  **Examples:**
+  ::
+      t1 = Tree() # creates an empty tree
+      t2 = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+      t3 = Tree('/home/user/myNewickFile.txt')
+  */
   constructor(
     newick = null,
     format = 0,
-    dist = null,
-    support = null,
-    name = null,
-    quotedNodeNames = false,
+    dist = DEFAULT_DIST,
+    support = DEFAULT_SUPPORT,
+    name = DEFAULT_NAME,
+    quoted_node_names = false,
     features = {}
   ) {
-    /*
- :argument newick: Path to the file containing the tree or, alternatively,
-    the text string containing the same information.
- :argument 0 format: subnewick format
-   .. table::
-       ======  ==============================================
-       FORMAT  DESCRIPTION
-       ======  ==============================================
-       0        flexible with support values
-       1        flexible with internal node names
-       2        all branches + leaf names + internal supports
-       3        all branches + all names
-       4        leaf branches + leaf names
-       5        internal and leaf branches + leaf names
-       6        internal branches + leaf names
-       7        leaf branches + all names
-       8        all names
-       9        leaf names
-       100      topology only
-       ======  ==============================================
- :returns: a tree node object which represents the base of the tree.
- **Examples:**
- ::
-     t1 = Tree() # creates an empty tree
-     t2 = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t3 = Tree('/home/user/myNewickFile.txt')
-  */
 
     this.children = [];
     this.up = null;
@@ -69,6 +71,76 @@ export class TreeNode {
     }
   }
 
+  /***************************/
+  /** DUNDER METHODS **/
+  /***************************/
+
+  /**
+   * This allows to execute tree.and('A') to obtain the descendant node
+   * whose name is "A".
+   */
+  and(value) {
+    try {
+      //TODO: make sure this works with however we end up implementing itersearchnodes
+      const firstMatch = this.iterSearchNodes({ name: value })
+      return firstMatch;
+    } catch (error) {
+      throw new TreeError("Node not found");
+    }
+  }
+
+  /**
+   * This allows us to sum two trees => new TreeNode root, which has each of the original trees' roots as its two children.
+   */
+  add(value) {
+    if (value instanceof TreeNode) {
+      const newRoot = new TreeNode();
+      newRoot.addChild(this);
+      newRoot.addChild(value);
+      return newRoot;
+    } else {
+      throw new TreeError("Invalid node type");
+    }
+  }
+
+  /**
+   * Print tree in newick format.
+   */
+  toString(compact=DEFAULT_COMPACT, show_internal=DEFAULT_SHOWINTERNAL) {
+    return this.getAscii(
+      compact, show_internal
+    );
+  }
+
+  /**
+   * Check if item belongs to this node. The 'item' argument must be a TreeNode instance or its
+   * associated name.
+   */
+  contains(item) {
+    if (item instanceof TreeNode) {
+      //TODO: originally this checked if the new item was in a Set() of the descendents. I don't think that should be necessary given how getDescendents() works, but should check this.
+      return this.getDescendants().includes(item);
+    } else if (typeof item === "string") {
+      return this.traverse().map((n: TreeNode) => n.name).includes(item);
+    }
+  }
+
+  /**
+   * Node len returns number of children.
+   */
+  length() {
+      return this.getLeaves().length ?? 0;
+  }
+
+  /**
+   *Iterator over leaf nodes
+    */
+  iterate() {
+      return this.iterLeaves();
+  }
+
+
+  /** PRIVATE METHODS **/
   #getDist() {
     return this.dist;
   }
@@ -77,7 +149,7 @@ export class TreeNode {
     try {
       this.dist = parseFloat(dist);
     } catch (error) {
-      throw "Error: node dist must be a float number";
+      throw new TreeError("Error: node dist must be a float number");
     }
   }
 
@@ -89,7 +161,7 @@ export class TreeNode {
     try {
       this.support = parseFloat(support);
     } catch (error) {
-      throw "Error: node support must be a float number";
+      throw new TreeError("Error: node support must be a float number");
     }
   }
 
@@ -100,7 +172,7 @@ export class TreeNode {
     if (up instanceof TreeNode || up === null) {
       this.up = up;
     } else {
-      throw "Error: node up must be a TreeNode or null";
+      throw new TreeError("Error: node up must be a TreeNode or null");
     }
   }
 
@@ -115,20 +187,24 @@ export class TreeNode {
     ) {
       this.children = children;
     } else {
-      throw "Error: node children must be an Array";
+      throw new TreeError("Error: node children must be an Array");
     }
   }
 
+/***************************/
+/** TOPOLOGY MANAGEMENT */
+/***************************/
+
   addFeature(name, value) {
     /*
- :argument name: name of the feature
- :argument value: value of the feature
- :returns: None
- **Examples:**
- ::
-     t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t.addFeature('name', 'tree1')
-     t.addFeature('color', 'red')
+:argument name: name of the feature
+:argument value: value of the feature
+:returns: None
+**Examples:**
+::
+    t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+    t.addFeature('name', 'tree1')
+    t.addFeature('color', 'red')
   */
     this[name] = value;
     this.features[name] = value;
@@ -142,14 +218,14 @@ export class TreeNode {
 
   delFeature(name) {
     /*
- :argument name: name of the feature
- :returns: None
- **Examples:**
- ::
-     t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t.addFeature('name', 'tree1')
-     t.addFeature('color', 'red')
-     t.delFeature('color')
+:argument name: name of the feature
+:returns: None
+**Examples:**
+::
+    t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+    t.addFeature('name', 'tree1')
+    t.addFeature('color', 'red')
+    t.delFeature('color')
   */
     this[name] = undefined;
     delete this.features[name];
@@ -157,12 +233,12 @@ export class TreeNode {
 
   addChild(child?, name?, dist?, support?) {
     /*
- :argument child: a TreeNode instance
- :returns: the child node instance
- **Examples:**
- ::
-     t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t.addChild(TreeNode('E:1'))
+:argument child: a TreeNode instance
+:returns: the child node instance
+**Examples:**
+::
+    t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+    t.addChild(TreeNode('E:1'))
   */
 
     if (!child || !(child instanceof TreeNode)) {
@@ -179,12 +255,12 @@ export class TreeNode {
 
   removeChild(child) {
     /*
- :argument child: a TreeNode instance
- :returns: child (with parent set to null)
- **Examples:**
- ::
-     t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t.removeChild(t.children[0])
+:argument child: a TreeNode instance
+:returns: child (with parent set to null)
+**Examples:**
+::
+    t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+    t.removeChild(t.children[0])
   */
     const childIndex = this.children.indexOf(child);
     if (childIndex > -1) {
@@ -192,17 +268,17 @@ export class TreeNode {
       child.up = null;
       return child;
     } else {
-      throw "Error: child not found";
+      throw new TreeError("Error: child not found");
     }
   }
 
   addSister(sister?, name?, dist?) {
     /*
- :argument sister: a TreeNode instance
- :returns: the sister node instance
+:argument sister: a TreeNode instance
+:returns: the sister node instance
   */
     if (this.up === null) {
-      throw "Error: A parent node is required to add a sister";
+      throw new TreeError("Error: A parent node is required to add a sister");
     } else {
       return this.up.addChild(sister, name, dist);
     }
@@ -248,14 +324,14 @@ export class TreeNode {
         ::
                 / C
           root-|
-               |        / B
+              |        / B
                 \--- H |
                         \ A
           > H.delete() will produce this structure:
                 / C
-               |
+              |
           root-|--B
-               |
+              |
                 \ A
   */
 
@@ -284,74 +360,24 @@ export class TreeNode {
   }
 
   /**
-   *  This allows to execute tree.and('A') to obtain the descendant node
-   *  whose name is "A".
+   * Detachs this node (and all its descendants) from its parent
+   * and returns the referent to itself.
+   * Detached node conserves all its structure of descendants, and can
+   * be attached to another node through the 'add_child' function. This
+   * mechanism can be seen as a cut and paste.
    */
-  and(value) {
-    try {
-      firstMatch = next(this.iterSearchNodes({ name: value }));
-      return firstMatch;
-    } catch (error) {
-      throw TreeError("Node not found");
+  detach() {
+    if (this.up) {
+      this.up.removeChild(this);
     }
+
+    this.up = null;
+    return this;
   }
 
-  /**
-   * This allows us to sum two trees.
-   */
-  add(value) {
-    if (value instanceof TreeNode) {
-      newRoot = TreeNode();
-      newRoot.addChild(this);
-      newRoot.addChild(value);
-      return newRoot;
-    } else {
-      throw TreeError("Invalid node type");
-    }
-  }
-
-  /**
-   * Print tree in newick format.
-   */
-  toString() {
-    return this.getAscii({
-      compact: DEFAULT_COMPACT,
-      showInternal: DEFAULT_SHOWINTERNAL,
-    });
-  }
-
-  /**
-   * Check if item belongs to this node. The 'item' argument must be a node instance or its
-   * associated name.
-   */
-  contains(item) {
-    if (item instanceof TreeNode) {
-      const children = Set(this.getDescendants());
-      find
-      return ;
-    } else if (typeof item === "string") {
-      return item in set([n.name for n in this.traverse()]);
-    }
-  }
-
-  /**
-   * Node len returns number of children.
-   */
-  length() {
-    return this.getLeaves().length ?? 0;
-  }
-
-  /**
-   *Iterator over leaf nodes
-   */
-  iterate(this) {
-    return this.iterLeaves();
-  }
-}
-
-/**
- * Tree traversal
- */
+  /******************
+   * Tree traversal *
+   *****************/
 
   /**
    * Returns an independent list of node's children.
@@ -363,32 +389,34 @@ export class TreeNode {
   /**
    * Returns an independent list of sister nodes.
    */
-  getSisters():
+  getSisters() {
     if (this.up) {
       return filter(this.up.children, (ch) => ch !== this);
     } else {
       return [];
     }
+  }
 
   /**
    * Returns an iterator over the leaves under this node.
    * :argument None isLeafFn: See :func:`TreeNode.traverse` for
    * documentation.
    */
-  iterLeaves(this, isLeafFn=None):
-    for n in this.traverse(strategy="preorder", isLeafFn=isLeafFn):
+  iterLeaves(this, isLeafFn) {
+    for n in this.traverse(strategy = "preorder", isLeafFn):
       if not isLeafFn:
         if n.isLeaf():
           yield n
       else:
         if isLeafFn(n):
           yield n
+  }
 
   /**
     Returns the list of terminal nodes (leaves) under this node.
     :argument None isLeafFn: See :func:`TreeNode.traverse` for
     documentation.
-   */
+  */
   getLeaves(isLeafFn) {
     return [...this.iterLeaves({ isLeafFn })];
   }
@@ -396,7 +424,7 @@ export class TreeNode {
   /**
    * Returns an iterator over the leaf names under this node.
    *:argument None isLeafFn: See :func:`TreeNode.traverse` for
-   * documentation.
+  * documentation.
   */
   iterLeafNames(isLeafFn) {
     for n in this.iterLeaves({ isLeafFn }):
@@ -446,7 +474,7 @@ export class TreeNode {
         or False. Use this argument to traverse a tree by
         dynamically collapsing internal nodes matching
         ``isLeafFn``.
-   */
+  */
   traverse(strategy = "levelorder", isLeafFn) {
     if (strategy == "preorder") {
       return this.iterDescendantsPreorder(isLeafFn);
@@ -455,6 +483,7 @@ export class TreeNode {
     } else if (strategy == "postorder") {
       return this.iterDescendantsPostorder(isLeafFn);
     }
+  }
 
   /**
    * Iterate over all nodes in a tree yielding every node in both
@@ -483,6 +512,8 @@ export class TreeNode {
         }
       }
     }
+  }
+}
 
 // class Tree is an alias for TreeNode
 export class Tree extends TreeNode {}
