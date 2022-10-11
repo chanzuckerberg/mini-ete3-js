@@ -1,4 +1,3 @@
-import { TreeNodeType } from "./d";
 import { readNewick } from "./newickAdapter";
 
 export class TreeNode {
@@ -7,8 +6,8 @@ export class TreeNode {
   // hierarchical way. Trees can be loaded from the New Hampshire Newick
   // format (newick).
 
-  children: Array<TreeNodeType>; // direct descendents of this node
-  up: TreeNodeType | null; // parent node
+  children: Array<TreeNode>; // direct descendents of this node
+  up: TreeNode | null; // parent node
   dist: number; // distance from the node to its parents (branchlength)
   support: number; // support value of the node
   name: string;
