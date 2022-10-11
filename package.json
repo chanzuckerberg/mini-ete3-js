@@ -6,7 +6,7 @@
 	"phylogenetics",
 	"trees"
     ],
-    "main": "index.js",
+    "main": "phylo-js.js",
     "scripts": {
 	"test": "echo \"Error: no test specified\" && exit 1"
     },
