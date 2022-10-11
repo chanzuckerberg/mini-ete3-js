@@ -1,17 +1,19 @@
+import { filter, find } from "lodash";
 import { readNewick } from "./newickAdapter";
 
 DEFAULT_COMPACT = false;
 DEFAULT_SHOWINTERNAL = false;
 DEFAULT_DIST = "1.0";
 DEFAULT_SUPPORT = "1.0";
-DEFAULT_NAME = "";
+DEFAULTNAME = "";
 
+/**
+  * TreeNode (Tree) class is used to store a tree structure. A tree
+  * consists of a collection of TreeNode instances connected in a
+  * hierarchical way. Trees can be loaded from the New Hampshire Newick
+  * format (newick).
+  */
 export class TreeNode {
-  // TreeNode (Tree) class is used to store a tree structure. A tree
-  // consists of a collection of TreeNode instances connected in a
-  // hierarchical way. Trees can be loaded from the New Hampshire Newick
-  // format (newick).
-
   children: Array<TreeNode>; // direct descendents of this node
   up: TreeNode | null; // parent node
   dist: number; // distance from the node to its parents (branchlength)
@@ -25,7 +27,7 @@ export class TreeNode {
     dist = null,
     support = null,
     name = null,
-    quoted_node_names = false,
+    quotedNodeNames = false,
     features = {}
   ) {
     /*
@@ -60,16 +62,17 @@ export class TreeNode {
     this.up = null;
     this.dist = dist ? dist : 1.0;
     this.support = support ? support : 1.0;
-    this.name = name ? name : DEFAULT_NAME;
+    this.name = name ? name : DEFAULTNAME;
 
     if (newick) {
-      readNewick(newick, this, format, quoted_node_names);
+      readNewick(newick, this, format, quotedNodeNames);
     }
   }
 
   #getDist() {
     return this.dist;
   }
+
   #setDist(dist) {
     try {
       this.dist = parseFloat(dist);
@@ -81,6 +84,7 @@ export class TreeNode {
   #getSupport() {
     return this.support;
   }
+
   #setSupport(support) {
     try {
       this.support = parseFloat(support);
@@ -103,6 +107,7 @@ export class TreeNode {
   #getChildren() {
     return this.children;
   }
+
   #setChildren(children) {
     if (
       children instanceof Array &&
@@ -122,8 +127,8 @@ export class TreeNode {
  **Examples:**
  ::
      t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t.add_feature('name', 'tree1')
-     t.add_feature('color', 'red')
+     t.addFeature('name', 'tree1')
+     t.addFeature('color', 'red')
   */
     this[name] = value;
     this.features[name] = value;
@@ -142,9 +147,9 @@ export class TreeNode {
  **Examples:**
  ::
      t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t.add_feature('name', 'tree1')
-     t.add_feature('color', 'red')
-     t.del_feature('color')
+     t.addFeature('name', 'tree1')
+     t.addFeature('color', 'red')
+     t.delFeature('color')
   */
     this[name] = undefined;
     delete this.features[name];
@@ -157,7 +162,7 @@ export class TreeNode {
  **Examples:**
  ::
      t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t.add_child(TreeNode('E:1'))
+     t.addChild(TreeNode('E:1'))
   */
 
     if (!child || !(child instanceof TreeNode)) {
@@ -179,7 +184,7 @@ export class TreeNode {
  **Examples:**
  ::
      t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-     t.remove_child(t.children[0])
+     t.removeChild(t.children[0])
   */
     const childIndex = this.children.indexOf(child);
     if (childIndex > -1) {
@@ -203,10 +208,10 @@ export class TreeNode {
     }
   }
 
-  remove_sister(sister) {
+  removeSister(sister) {
     /*
         Removes a sister node. It has the same effect as
-        **`TreeNode.up.remove_child(sister)`**
+        **`TreeNode.up.removeChild(sister)`**
         If a sister node is not supplied, the first sister will be deleted
         and returned.
         :argument sister: A node instance
@@ -226,16 +231,16 @@ export class TreeNode {
     }
   }
 
-  delete(prevent_nondicotomic = true, preserve_branch_length = false) {
+  delete(preventNondicotomic = true, preserveBranchLength = false) {
     /*
         Deletes node from the tree structure. Notice that this method
         makes 'disappear' the node from the tree structure. This means
         that children from the deleted node are transferred to the
         next available parent.
-        :param True prevent_nondicotomic: When True (default), delete
+        :param True preventNondicotomic: When True (default), delete
             function will be execute recursively to prevent
             single-child nodes.
-        :param False preserve_branch_length: If True, branch lengths
+        :param False preserveBranchLength: If True, branch lengths
             of the deleted nodes are transferred (summed up) to its
             parent's branch, thus keeping original distances among
             nodes.
@@ -257,7 +262,7 @@ export class TreeNode {
     const parent = this.up;
 
     if (parent) {
-      if (preserve_branch_length) {
+      if (preserveBranchLength) {
         if (this.children.length === 1) {
           this.children[0].dist += this.dist;
         } else if (this.children.length > 1) {
@@ -273,8 +278,8 @@ export class TreeNode {
       parent.removeChild(this);
     }
 
-    if (prevent_nondicotomic && parent && parent.children.length < 2) {
-      parent.delete(prevent_nondicotomic, preserve_branch_length);
+    if (preventNondicotomic && parent && parent.children.length < 2) {
+      parent.delete(preventNondicotomic, preserveBranchLength);
     }
   }
 
@@ -282,7 +287,7 @@ export class TreeNode {
    *  This allows to execute tree.and('A') to obtain the descendant node
    *  whose name is "A".
    */
-  function and(value) {
+  and(value) {
     try {
       firstMatch = next(this.iterSearchNodes({ name: value }));
       return firstMatch;
@@ -294,7 +299,7 @@ export class TreeNode {
   /**
    * This allows us to sum two trees.
    */
-  function add(value) {
+  add(value) {
     if (value instanceof TreeNode) {
       newRoot = TreeNode();
       newRoot.addChild(this);
@@ -308,7 +313,7 @@ export class TreeNode {
   /**
    * Print tree in newick format.
    */
-  function toString() {
+  toString() {
     return this.getAscii({
       compact: DEFAULT_COMPACT,
       showInternal: DEFAULT_SHOWINTERNAL,
@@ -319,27 +324,165 @@ export class TreeNode {
    * Check if item belongs to this node. The 'item' argument must be a node instance or its
    * associated name.
    */
-  function contains(item) {
+  contains(item) {
     if (item instanceof TreeNode) {
-      return item in set(this.getDescendants());
+      const children = Set(this.getDescendants());
+      find
+      return ;
     } else if (typeof item === "string") {
-      return item in set([n.name for n in self.traverse()]);
+      return item in set([n.name for n in this.traverse()]);
     }
   }
 
   /**
    * Node len returns number of children.
    */
-  function length() {
-      return this.getLeaves().length ?? 0;
+  length() {
+    return this.getLeaves().length ?? 0;
   }
 
   /**
    *Iterator over leaf nodes
    */
-  function iterate(self) {
-      return this.iterLeaves();
+  iterate(this) {
+    return this.iterLeaves();
   }
 }
+
+/**
+ * Tree traversal
+ */
+
+  /**
+   * Returns an independent list of node's children.
+   */
+  getChildren() {
+    return [...this.children];
+  }
+
+  /**
+   * Returns an independent list of sister nodes.
+   */
+  getSisters():
+    if (this.up) {
+      return filter(this.up.children, (ch) => ch !== this);
+    } else {
+      return [];
+    }
+
+  /**
+   * Returns an iterator over the leaves under this node.
+   * :argument None isLeafFn: See :func:`TreeNode.traverse` for
+   * documentation.
+   */
+  iterLeaves(this, isLeafFn=None):
+    for n in this.traverse(strategy="preorder", isLeafFn=isLeafFn):
+      if not isLeafFn:
+        if n.isLeaf():
+          yield n
+      else:
+        if isLeafFn(n):
+          yield n
+
+  /**
+    Returns the list of terminal nodes (leaves) under this node.
+    :argument None isLeafFn: See :func:`TreeNode.traverse` for
+    documentation.
+   */
+  getLeaves(isLeafFn) {
+    return [...this.iterLeaves({ isLeafFn })];
+  }
+
+  /**
+   * Returns an iterator over the leaf names under this node.
+   *:argument None isLeafFn: See :func:`TreeNode.traverse` for
+   * documentation.
+  */
+  iterLeafNames(isLeafFn) {
+    for n in this.iterLeaves({ isLeafFn }):
+      yield n.name
+  }
+
+  /**
+   * Returns the list of terminal node names under the current node.
+   * :argument None isLeafFn: See :func:`TreeNode.traverse` for
+   * documentation.
+   */
+  getLeafNames(isLeafFn) {
+    return [...this.iterLeafNames({ isLeafFn })];
+  }
+
+  /**
+   * Returns an iterator over all descendant nodes.
+   * :argument None isLeafFn: See :func:`TreeNode.traverse` for
+   * documentation.
+   */
+  iterDescendants(strategy = "levelorder", isLeafFn) {
+    for n in this.traverse(strategy, isLeafFn):
+      if n is not this:
+        yield n
+  }
+
+  /**
+   * Returns a list of all (leaves and internal) descendant nodes.
+   * :argument None isLeafFn: See :func:`TreeNode.traverse` for
+   * documentation.
+   */
+  getDescendants(strategy = "levelorder", isLeafFn) {
+    return [...this.iterDescendants(strategy, isLeafFn)];
+  }
+
+  /**
+   * Returns an iterator to traverse the tree structure under this node.
+    :argument "levelorder" strategy: set the way in which tree
+        will be traversed. Possible values are: "preorder" (first
+        parent and then children) 'postorder' (first children and
+        the parent) and "levelorder" (nodes are visited in order
+        from root to leaves)
+    :argument None isLeafFn: If supplied, ``isLeafFn``
+        function will be used to interrogate nodes about if they
+        are terminal or internal. ``isLeafFn`` function should
+        receive a node instance as first argument and return True
+        or False. Use this argument to traverse a tree by
+        dynamically collapsing internal nodes matching
+        ``isLeafFn``.
+   */
+  traverse(strategy = "levelorder", isLeafFn) {
+    if (strategy == "preorder") {
+      return this.iterDescendantsPreorder(isLeafFn);
+    } else if (strategy == "levelorder") {
+      return this.iterDescendantsLevelorder(isLeafFn);
+    } else if (strategy == "postorder") {
+      return this.iterDescendantsPostorder(isLeafFn);
+    }
+
+  /**
+   * Iterate over all nodes in a tree yielding every node in both
+   * pre and post order. Each iteration returns a postorder flag
+   * (True if node is being visited in postorder) and a node
+   * instance.
+   */
+  iterPrepostorder(isLeafFn) {
+    toVisit = [this];
+    const isLeaf = isLeafFn ?? this.isLeaf;
+
+    while (toVisit.length > 0) {
+      node = toVisit.pop(-1);
+      try {
+        node = node[1];
+
+        // POSTORDER ACTIONS
+        return { done: true, value: node };
+      } catch (error) {
+        // PREORDER ACTIONS
+        return { done: false, value: node };
+
+        if (!isLeaf(node)) {
+          // ADD CHILDREN
+          toVisit.extend(reversed(node.children + [[1, node]]));
+        }
+      }
+    }
+
 // class Tree is an alias for TreeNode
 export class Tree extends TreeNode {}
