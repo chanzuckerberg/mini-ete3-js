@@ -1,0 +1,15 @@
+name: Lint and Test
+
+# Runs linting and tests for a push to any branch.
+# TODO Actually implement running of linting and tests
+# TODO Figure out a way to run lints/tests on forked repo PRs, but NOT expose
+# any kind of secrets (eg if we use a GitHub Action for NPM publishing).
+on: push
+
+jobs:
+  lint_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hello World
+        run: |
+          echo "yup, looks like it's running!"
