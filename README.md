@@ -10,7 +10,8 @@ Initially implemented to mirror ETE3 as of version 3.1.2
 
 If this package is helpful to you, please let us know! This will help us gauge how much effort to put into its maintenance and expansion.
 
-Speaking of, contributions are super, super welcome!
+Speaking of, contributions are super, super welcome! Please see [the contribution guide](CONTRIBUTE.md) for some hints.
+
 
 ## Code of Conduct
 
