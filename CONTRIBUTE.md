@@ -18,7 +18,7 @@ We suggest the standard fork-edit-pull request model. Fork the repository from [
 
     npm install
 	
-This will automatically install Typescript.
+This will automatically install Typescript and other dependencies.
 
 ## Adding modules
 
