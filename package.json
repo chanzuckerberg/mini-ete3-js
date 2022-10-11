@@ -1,0 +1,29 @@
+{
+    "name": "phylo-js",
+    "version": "0.0.1",
+    "description": "A partial port of ETE3 toolkit to typescript to enable phylogenetics in the browser",
+    "keywords": [
+	"phylogenetics",
+	"trees"
+    ],
+    "main": "index.js",
+    "scripts": {
+	"test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+	"type": "git",
+	"url": "git+https://github.com/chanzuckerberg/phylo-js.git"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+	"typescript": "4.8.1"
+    },    
+    "author": "Sidney Bell",
+    "license": "MIT",
+    "bugs": {
+	"url": "https://github.com/chanzuckerberg/phylo-js/issues"
+    },
+    "homepage": "https://github.com/chanzuckerberg/phylo-js#readme"
+    
+}
