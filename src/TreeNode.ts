@@ -12,6 +12,7 @@ export class TreeNode {
   dist: number; // distance from the node to its parents (branchlength)
   support: number; // support value of the node
   name: string;
+  features: { [key: string]: any };
 
   constructor(
     newick = null,
@@ -19,7 +20,8 @@ export class TreeNode {
     dist = null,
     support = null,
     name = null,
-    quoted_node_names = false
+    quoted_node_names = false,
+    features = {}
   ) {
     /*
  :argument newick: Path to the file containing the tree or, alternatively,
@@ -59,7 +61,89 @@ export class TreeNode {
       readNewick(newick, this, format, quoted_node_names);
     }
   }
-}
 
+  #getDist() {
+    return this.dist;
+  }
+  #setDist(dist) {
+    try {
+      this.dist = parseFloat(dist);
+    } catch (error) {
+      throw "Error: node dist must be a float number";
+    }
+  }
+
+  #getSupport() {
+    return this.support;
+  }
+  #setSupport(support) {
+    try {
+      this.support = parseFloat(support);
+    } catch (error) {
+      throw "Error: node support must be a float number";
+    }
+  }
+
+  #getUp() {
+    return this.up;
+  }
+  #setUp(up) {
+    if (up instanceof TreeNode || up === null) {
+      this.up = up;
+    } else {
+      throw "Error: node up must be a TreeNode or null";
+    }
+  }
+
+  #getChildren() {
+    return this.children;
+  }
+  #setChildren(children) {
+    if (
+      children instanceof Array &&
+      children.every((child) => child instanceof TreeNode)
+    ) {
+      this.children = children;
+    } else {
+      throw "Error: node children must be an Array";
+    }
+  }
+
+  addFeature(name, value) {
+    /*
+ :argument name: name of the feature
+ :argument value: value of the feature
+ :returns: None
+ **Examples:**
+ ::
+     t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+     t.add_feature('name', 'tree1')
+     t.add_feature('color', 'red')
+  */
+    this[name] = value;
+    this.features[name] = value;
+  }
+
+  addFeatures(features) {
+    for (const [key, value] of Object.entries(features)) {
+      this.addFeature(key, value);
+    }
+  }
+
+  delFeature(name) {
+    /*
+ :argument name: name of the feature
+ :returns: None
+ **Examples:**
+ ::
+     t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+     t.add_feature('name', 'tree1')
+     t.add_feature('color', 'red')
+     t.del_feature('color')
+  */
+    this[name] = undefined;
+    delete this.features[name];
+  }
+}
 // class Tree is an alias for TreeNode
 export class Tree extends TreeNode {}
