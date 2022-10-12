@@ -8,6 +8,7 @@
   ],
   "browser": "phylo-js.html",
   "scripts": {
+    "lint": "npm run type-check && npm run lint-code && npm run lint-formatting",
     "lint-code": "eslint **/*.{ts,js} --fix",
     "lint-code-ci": "eslint **/*.{ts,js}",
     "lint-formatting": "prettier --write .",
