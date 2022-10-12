@@ -133,10 +133,10 @@ export class TreeNode {
   
 
   /** PRIVATE METHODS **/
-  #getDist() {
+  _getDist() {
     return this.dist;
   }
-  #setDist(dist) {
+  _setDist(dist) {
     try {
       this.dist = parseFloat(dist);
     } catch (error) {
@@ -144,10 +144,10 @@ export class TreeNode {
     }
   }
 
-  #getSupport() {
+  _getSupport() {
     return this.support;
   }
-  #setSupport(support) {
+  _setSupport(support) {
     try {
       this.support = parseFloat(support);
     } catch (error) {
@@ -155,10 +155,10 @@ export class TreeNode {
     }
   }
 
-  #getUp() {
+  _getUp() {
     return this.up;
   }
-  #setUp(up) {
+  _setUp(up) {
     if (up instanceof TreeNode || up === null) {
       this.up = up;
     } else {
@@ -166,10 +166,10 @@ export class TreeNode {
     }
   }
 
-  #getChildren() {
+  _getChildren() {
     return this.children;
   }
-  #setChildren(children) {
+  _setChildren(children) {
     if (
       children instanceof Array &&
       children.every((child) => child instanceof TreeNode)
@@ -517,7 +517,7 @@ export class TreeNode {
 export class Tree extends TreeNode {}
 
 //* Given an array with elements which are an unknown mixture of strings (TreeNode names) and TreeNodes, find the corresponding TreeNode objects for any string elements, returning an array of TreeNodes */
-const _translate_nodes = (root: TreeNode, nodes: Array<TreeNode | string>) => {
+const _translateNodes = (root: TreeNode, nodes: Array<TreeNode | string>) => {
     let name2node: {[key: string]: TreeNode | null} = {}
 
     nodes.forEach((node) => {
