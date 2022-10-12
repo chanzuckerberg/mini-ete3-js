@@ -10,15 +10,27 @@ jobs:
   lint_and_test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Setup Node/NPM
-        uses: actions/setup-node@v3
-        with:
-          # Just picked what we've been using in local dev work
-          node-version: 18
-      - name: Install node modules
-        # `npm ci` tells npm to install matching against package-lock file
-        run: npm ci
-      - name: Lint code formatting
-        run: npm run lint-formatting-ci
+      - name: TODO Enable CI linting and testing; make it part of PR flow
+        run: echo "Happy as Larry!"
+      # TODO Uncomment all below once ready to start doing CI linting/testing
+      # - name: Checkout code
+      #   uses: actions/checkout@v3
+      # - name: Setup Node/NPM
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     # Just picked what we've been using in local dev work
+      #     node-version: 18
+      # - name: Install node modules
+      #   # `npm ci` tells npm to install matching against package-lock file
+      #   run: npm ci
+      # # From here down is actual linting/testing of code.
+      # # We could run these in parallel for speed, but easiest to just run
+      # # sequentially for now and it makes subject of error a bit more readable.
+      # - name: Type check code
+      #   run: npm run type-check
+      # - name: Lint code for syntax and problems
+      #   run: npm run lint-code-ci
+      # - name: Lint code for styling
+      #   run: npm run lint-formatting-ci
+      # - name: Run tests
+      #   run: npm run test
