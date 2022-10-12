@@ -1,4 +1,5 @@
 import { DEFAULT_DIST, DEFAULT_COMPACT, DEFAULT_NAME, DEFAULT_SHOWINTERNAL, DEFAULT_SUPPORT } from "./constants";
+import { setIntersection } from "./helperFunctions";
 import { readNewick } from "./newickAdapter";
 import {TreeError} from "./TreeError";
 
@@ -366,7 +367,7 @@ export class TreeNode {
     topological relationships among the requested nodes will be
     retained. Root node is always conserved.
     :var nodes: a list of node names or node objects that should be retained
-    :param False preserve_branch_length: If True, branch lengths
+    :param preserve_branch_length (default: False): If True, branch lengths
       of the deleted nodes are transferred (summed up) to its
       parent's branch, thus keeping original distances among
       nodes.
@@ -425,83 +426,61 @@ export class TreeNode {
       #    \K|
       #       \-J
     */
-  prune(nodes, preserve_branch_length=false) {
+  // prune(toKeep: Array<string | TreeNode>, preserve_branch_length: boolean =false) {
+  //   // convert any node names to TreeNode objects
+  //   let nodesToKeep: TreeNode[] = _translateNodes(this, toKeep)
+  //   // always retain the root
+  //   nodesToKeep.push(this)
 
-    let node2count: {[key: string] : string[]} = {}
-    let node2depth: {[key: string] : number} = {};
+  //   //TODO: make sure we ended up returning arguments in this format
+  //   const {mrca, nodeToPath} = this.getCommonAncestor(toKeep, true)
+  //   const nodeNameToDepth: {[key: string] : number} = {};
+  //   const nodeNameToTargets: {[key: string] : TreeNode[]} = {};
+  //   // const nameToNode: {key: string, value: TreeNode} = {};
 
-    let toKeep: TreeNode[] = _translate_nodes(this, nodes)
-    // if several nodes are in the same path of two kept nodes,
-    // only one should be maintained. This prioritize internal
-    // nodes that are already in the to_keep list and then
-    // deeper nodes (closer to the leaves). 
-    const cmp_nodes = (x, y) => {
-      if (node2depth[x] > node2depth[y]) {
-        return -1;
-      } else if (node2depth[x] < node2depth[y]) {
-        return 1;
-      } else {
-        return 0;
-      }
-    }
+  //   // Calculate which nodesToKeep are visiting the same internal "path" nodes en route to the mrca
+  //   Object.entries(nodeToPath).forEach(([nodeName, path]) => {
+  //     path.forEach((pathNode: TreeNode) => {
+  //       if (!Object.keys(nodeNameToDepth).includes(pathNode.name)) {
+  //         const depth = pathNode.getDistance(mrca, true)
+  //         nodeNameToDepth[pathNode.name] = depth
+  //       }
+  //       if (!Object.keys(nodeNameToTargets).includes(pathNode.name)) {
+  //         nodeNameToTargets[pathNode.name] = []
+  //       }
+  //       if (!(nodeName === pathNode.name)) {
+  //         nodeNameToTargets[pathNode.name].push(nodeName)
+  //       }
+  //   })
+  // })
 
-    //TODO: make sure we ended up returning arguments in this format
-    const {start, node2path} = this.getCommonAncestor(toKeep, true)
-    // always retain the root
-    toKeep.push(this)
+  // // if several internal nodes are in the path of exactly the same kept
+  // // nodes, only one (the deepest) should be maintained.
+  // const compareNodeDepth = (x, y) => {
+  //   if (nodeNameToDepth[x] > nodeNameToDepth[y]) {
+  //     return -1;
+  //   } else if (nodeNameToDepth[x] < nodeNameToDepth[y]) {
+  //     return 1;
+  //   } else {
+  //     return 0;
+  //   }
+  // }
 
-    // Calculate which kept nodes are visiting the same nodes in
-    // their path to the common ancestor.
-    Object.entries(node2path).forEach(([nodeName, path]) => {
-      path.forEach((visitedNode: TreeNode) => {
-        if (!Object.keys(node2depth).includes(visitedNode.name)) {
-          const depth = visitedNode.getDistance(start, true)
-          node2depth[visitedNode.name] = depth
-        }
-        if (!(nodeName === visitedNode.name)) {
-          node2count[visitedNode.name] = [nodeName]
-        }
-    })
-  })
+  // this.getDescendents('postorder').forEach((node: TreeNode) => {
+  //   if (!nodesToKeep.includes(node)) {
+  //     if (preserve_branch_length) {
+  //       if (node.children.length === 1) {
+  //         node.children[0].dist += n.dist
+  //       } else if (node.children.length > 1 && node.up) {
+  //         node.up.dist += node.dist
+  //     }
+  //   }
+  //   node.delete(true)
+  // }
+  //   })
 
-  // if several internal nodes are in the path of exactly the same kept
-  // nodes, only one (the deepest) should be maintain.
-  const visitors2Nodes = {}
-
-  Object.entries(node2count).forEach(([nodeName, visitorNames]) => {
-    // keep nodes in connection with at least two other nodes
-    if (visitorNames.length > 1) {
-      const visitorKey = visitorNames.sort().join(',')
-      if (!visitors2Nodes[visitorKey]) {
-        visitors2Nodes[visitorKey] = []
-      }
-      visitors2Nodes[visitorKey].push(nodeName)
-    }
-  })
-
-  Object.entries(visitors2Nodes).forEach(([visitorKey, nodeNames]) => {
-    //TODO: translate whatever the heck this is doing
-    // if not (to_keep & nodes):
-    // sorted_nodes = sorted(nodes, key=cmp_to_key(cmp_nodes))
-    // to_keep.add(sorted_nodes[0])
-    console.warn('block missing translation from within `prune`!')
-  }
-
-  this.getDescendents('postorder').forEach((node: TreeNode) => {
-    if (!toKeep.includes(node)) {
-      if (preserve_branch_length) {
-        if (node.children.length === 1) {
-          node.children[0].dist += n.dist
-        } else if (node.children.length > 1 && node.up) {
-          node.up.dist += node.dist
-      }
-    }
-    node.delete(true)
-  }
-    })
-
-    // TODO: missing some ending brace here somewhere
-  }
+  //   // TODO: missing some ending brace here somewhere
+  // }
 
   // Reverses the current children order
   swapChildren() {
