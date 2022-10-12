@@ -630,6 +630,18 @@ export class TreeNode {
       }
     }
   }
+
+  /**
+   * Returns the absolute root node of current tree structure.
+   */
+  getTreeRoot(): TreeNode {
+    let root: TreeNode = this;
+    while (root.up !== null) {
+      root = root.up;
+    }
+    return root;
+  }
+
 }
 // class Tree is an alias for TreeNode
 export class Tree extends TreeNode {}
