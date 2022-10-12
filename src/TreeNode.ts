@@ -1,11 +1,6 @@
+import { DEFAULT_DIST, DEFAULT_COMPACT, DEFAULT_NAME, DEFAULT_SHOWINTERNAL, DEFAULT_SUPPORT } from "./constants";
 import { readNewick } from "./newickAdapter";
 import {TreeError} from "./TreeError";
-
-const DEFAULT_COMPACT = false;
-const DEFAULT_SHOWINTERNAL = false;
-const DEFAULT_DIST = 1.0;
-const DEFAULT_SUPPORT = 1.0;
-const DEFAULT_NAME = "";
 
 // TreeNode (Tree) class is used to store a tree structure. A tree
 // consists of a collection of TreeNode instances connected in a
