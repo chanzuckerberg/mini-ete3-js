@@ -1,19 +1,13 @@
 import { filter, find } from "lodash";
+import { DEFAULT_DIST, DEFAULT_COMPACT, DEFAULT_NAME, DEFAULT_SHOWINTERNAL, DEFAULT_SUPPORT } from "./constants";
+import { setIntersection } from "./helperFunctions";
 import { readNewick } from "./newickAdapter";
 import {TreeError} from "./TreeError";
 
-const DEFAULT_COMPACT = false;
-const DEFAULT_SHOWINTERNAL = false;
-const DEFAULT_DIST = "1.0";
-const DEFAULT_SUPPORT = "1.0";
-const DEFAULTNAME = "";
-
-/**
-  * TreeNode (Tree) class is used to store a tree structure. A tree
-  * consists of a collection of TreeNode instances connected in a
-  * hierarchical way. Trees can be loaded from the New Hampshire Newick
-  * format (newick).
-  */
+// TreeNode (Tree) class is used to store a tree structure. A tree
+// consists of a collection of TreeNode instances connected in a
+// hierarchical way. Trees can be loaded from the New Hampshire Newick
+// format (newick).
 export class TreeNode {
   /** ATTRIBUTES **/
   children: Array<TreeNode>; // direct descendents of this node
@@ -141,11 +135,10 @@ export class TreeNode {
 
 
   /** PRIVATE METHODS **/
-  #getDist() {
+  _getDist() {
     return this.dist;
   }
-
-  #setDist(dist) {
+  _setDist(dist) {
     try {
       this.dist = parseFloat(dist);
     } catch (error) {
@@ -153,11 +146,10 @@ export class TreeNode {
     }
   }
 
-  #getSupport() {
+  _getSupport() {
     return this.support;
   }
-
-  #setSupport(support) {
+  _setSupport(support) {
     try {
       this.support = parseFloat(support);
     } catch (error) {
@@ -165,10 +157,10 @@ export class TreeNode {
     }
   }
 
-  #getUp() {
+  _getUp() {
     return this.up;
   }
-  #setUp(up) {
+  _setUp(up) {
     if (up instanceof TreeNode || up === null) {
       this.up = up;
     } else {
@@ -176,11 +168,10 @@ export class TreeNode {
     }
   }
 
-  #getChildren() {
+  _getChildren() {
     return this.children;
   }
-
-  #setChildren(children) {
+  _setChildren(children) {
     if (
       children instanceof Array &&
       children.every((child) => child instanceof TreeNode)
@@ -195,17 +186,17 @@ export class TreeNode {
 /** TOPOLOGY MANAGEMENT */
 /***************************/
 
-  addFeature(name, value) {
-    /*
+/*
 :argument name: name of the feature
 :argument value: value of the feature
 :returns: None
 **Examples:**
 ::
-    t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-    t.addFeature('name', 'tree1')
-    t.addFeature('color', 'red')
-  */
+ t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+ t.add_feature('name', 'tree1')
+ t.add_feature('color', 'red')
+*/
+  addFeature(name, value) {
     this[name] = value;
     this.features[name] = value;
   }
@@ -216,30 +207,30 @@ export class TreeNode {
     }
   }
 
-  delFeature(name) {
-    /*
+  /*
 :argument name: name of the feature
 :returns: None
 **Examples:**
 ::
-    t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-    t.addFeature('name', 'tree1')
-    t.addFeature('color', 'red')
-    t.delFeature('color')
-  */
+   t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+   t.add_feature('name', 'tree1')
+   t.add_feature('color', 'red')
+   t.del_feature('color')
+*/
+  delFeature(name) {
     this[name] = undefined;
     delete this.features[name];
   }
 
-  addChild(child?, name?, dist?, support?) {
-    /*
+  /*
 :argument child: a TreeNode instance
 :returns: the child node instance
 **Examples:**
 ::
-    t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-    t.addChild(TreeNode('E:1'))
-  */
+   t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+   t.add_child(TreeNode('E:1'))
+*/
+  addChild(child?, name?, dist?, support?) {
 
     if (!child || !(child instanceof TreeNode)) {
       child = new TreeNode();
@@ -253,15 +244,15 @@ export class TreeNode {
     return child;
   }
 
-  removeChild(child) {
-    /*
+  /*
 :argument child: a TreeNode instance
 :returns: child (with parent set to null)
 **Examples:**
 ::
-    t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
-    t.removeChild(t.children[0])
-  */
+   t = Tree('(A:1,(B:1,(C:1,D:1):0.5):0.5);')
+   t.remove_child(t.children[0])
+*/
+  removeChild(child) {
     const childIndex = this.children.indexOf(child);
     if (childIndex > -1) {
       delete this.children[childIndex];
@@ -272,11 +263,11 @@ export class TreeNode {
     }
   }
 
-  addSister(sister?, name?, dist?) {
-    /*
+  /*
 :argument sister: a TreeNode instance
 :returns: the sister node instance
-  */
+*/
+  addSister(sister?, name?, dist?) {
     if (this.up === null) {
       throw new TreeError("Error: A parent node is required to add a sister");
     } else {
@@ -284,15 +275,15 @@ export class TreeNode {
     }
   }
 
-  removeSister(sister) {
-    /*
-        Removes a sister node. It has the same effect as
-        **`TreeNode.up.removeChild(sister)`**
-        If a sister node is not supplied, the first sister will be deleted
-        and returned.
-        :argument sister: A node instance
-        :return: The node removed
-  */
+  /*
+      Removes a sister node. It has the same effect as
+      **`TreeNode.up.remove_child(sister)`**
+      If a sister node is not supplied, the first sister will be deleted
+      and returned.
+      :argument sister: A node instance
+      :return: The node removed
+*/
+  remove_sister(sister) {
     if (this.up === null) {
       throw "Error: A parent node is required to remove a sister";
     }
@@ -307,33 +298,33 @@ export class TreeNode {
     }
   }
 
-  delete(preventNondicotomic = true, preserveBranchLength = false) {
-    /*
-        Deletes node from the tree structure. Notice that this method
-        makes 'disappear' the node from the tree structure. This means
-        that children from the deleted node are transferred to the
-        next available parent.
-        :param True preventNondicotomic: When True (default), delete
-            function will be execute recursively to prevent
-            single-child nodes.
-        :param False preserveBranchLength: If True, branch lengths
-            of the deleted nodes are transferred (summed up) to its
-            parent's branch, thus keeping original distances among
-            nodes.
-        **Example:**
-        ::
-                / C
-          root-|
-              |        / B
-                \--- H |
-                        \ A
-          > H.delete() will produce this structure:
-                / C
-              |
-          root-|--B
-              |
-                \ A
-  */
+  /*
+      Deletes node from the tree structure. Notice that this method
+      makes 'disappear' the node from the tree structure. This means
+      that children from the deleted node are transferred to the
+      next available parent.
+      :param True prevent_nondicotomic: When True (default), delete
+          function will be execute recursively to prevent
+          single-child nodes.
+      :param False preserve_branch_length: If True, branch lengths
+          of the deleted nodes are transferred (summed up) to its
+          parent's branch, thus keeping original distances among
+          nodes.
+      **Example:**
+      ::
+              / C
+        root-|
+             |        / B
+              \--- H |
+                      \ A
+        > H.delete() will produce this structure:
+              / C
+             |
+        root-|--B
+             |
+              \ A
+*/
+  delete(prevent_nondicotomic = true, preserve_branch_length = false) {
 
     const parent = this.up;
 
@@ -359,13 +350,11 @@ export class TreeNode {
     }
   }
 
-  /**
-   * Detachs this node (and all its descendants) from its parent
-   * and returns the referent to itself.
-   * Detached node conserves all its structure of descendants, and can
-   * be attached to another node through the 'add_child' function. This
-   * mechanism can be seen as a cut and paste.
-   */
+  /*Detachs this node (and all its descendants) from its parent
+  and returns the referent to itself.
+  Detached node conserves all its structure of descendants, and can
+  be attached to another node through the 'add_child' function. This
+  mechanism can be seen as a cut and paste.*/
   detach() {
     if (this.up) {
       this.up.removeChild(this);
@@ -373,6 +362,133 @@ export class TreeNode {
 
     this.up = null;
     return this;
+  }
+
+  /**Prunes the topology of a node to conserve only the selected list of leaf
+    nodes. The minimum number of nodes that conserve the
+    topological relationships among the requested nodes will be
+    retained. Root node is always conserved.
+    :var nodes: a list of node names or node objects that should be retained
+    :param preserve_branch_length (default: False): If True, branch lengths
+      of the deleted nodes are transferred (summed up) to its
+      parent's branch, thus keeping original distances among
+      nodes.
+    **Examples:**
+    ::
+      t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
+      t1.prune(['A', 'B'])
+      #                /-A
+      #          /D /C|
+      #       /F|      \-B
+      #      |  |
+      #    /H|   \-E
+      #   |  |                        /-A
+      #-root  \-G                 -root
+      #   |                           \-B
+      #   |   /-I
+      #    \K|
+      #       \-J
+      t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
+      t1.prune(['A', 'B', 'C'])
+      #                /-A
+      #          /D /C|
+      #       /F|      \-B
+      #      |  |
+      #    /H|   \-E
+      #   |  |                              /-A
+      #-root  \-G                  -root- C|
+      #   |                                 \-B
+      #   |   /-I
+      #    \K|
+      #       \-J
+      t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
+      t1.prune(['A', 'B', 'I'])
+      #                /-A
+      #          /D /C|
+      #       /F|      \-B
+      #      |  |
+      #    /H|   \-E                    /-I
+      #   |  |                      -root
+      #-root  \-G                      |   /-A
+      #   |                             \C|
+      #   |   /-I                          \-B
+      #    \K|
+      #       \-J
+      t1 = Tree('(((((A,B)C)D,E)F,G)H,(I,J)K)root;', format=1)
+      t1.prune(['A', 'B', 'F', 'H'])
+      #                /-A
+      #          /D /C|
+      #       /F|      \-B
+      #      |  |
+      #    /H|   \-E
+      #   |  |                              /-A
+      #-root  \-G                -root-H /F|
+      #   |                                 \-B
+      #   |   /-I
+      #    \K|
+      #       \-J
+    */
+  // prune(toKeep: Array<string | TreeNode>, preserve_branch_length: boolean =false) {
+  //   // convert any node names to TreeNode objects
+  //   let nodesToKeep: TreeNode[] = _translateNodes(this, toKeep)
+  //   // always retain the root
+  //   nodesToKeep.push(this)
+
+  //   //TODO: make sure we ended up returning arguments in this format
+  //   const {mrca, nodeToPath} = this.getCommonAncestor(toKeep, true)
+  //   const nodeNameToDepth: {[key: string] : number} = {};
+  //   const nodeNameToTargets: {[key: string] : TreeNode[]} = {};
+  //   // const nameToNode: {key: string, value: TreeNode} = {};
+
+  //   // Calculate which nodesToKeep are visiting the same internal "path" nodes en route to the mrca
+  //   Object.entries(nodeToPath).forEach(([nodeName, path]) => {
+  //     path.forEach((pathNode: TreeNode) => {
+  //       if (!Object.keys(nodeNameToDepth).includes(pathNode.name)) {
+  //         const depth = pathNode.getDistance(mrca, true)
+  //         nodeNameToDepth[pathNode.name] = depth
+  //       }
+  //       if (!Object.keys(nodeNameToTargets).includes(pathNode.name)) {
+  //         nodeNameToTargets[pathNode.name] = []
+  //       }
+  //       if (!(nodeName === pathNode.name)) {
+  //         nodeNameToTargets[pathNode.name].push(nodeName)
+  //       }
+  //   })
+  // })
+
+  // // if several internal nodes are in the path of exactly the same kept
+  // // nodes, only one (the deepest) should be maintained.
+  // const compareNodeDepth = (x, y) => {
+  //   if (nodeNameToDepth[x] > nodeNameToDepth[y]) {
+  //     return -1;
+  //   } else if (nodeNameToDepth[x] < nodeNameToDepth[y]) {
+  //     return 1;
+  //   } else {
+  //     return 0;
+  //   }
+  // }
+
+  // this.getDescendents('postorder').forEach((node: TreeNode) => {
+  //   if (!nodesToKeep.includes(node)) {
+  //     if (preserve_branch_length) {
+  //       if (node.children.length === 1) {
+  //         node.children[0].dist += n.dist
+  //       } else if (node.children.length > 1 && node.up) {
+  //         node.up.dist += node.dist
+  //     }
+  //   }
+  //   node.delete(true)
+  // }
+  //   })
+
+  //   // TODO: missing some ending brace here somewhere
+  // }
+
+  // Reverses the current children order
+  swapChildren() {
+    if (this.children.length > 1) {
+      this.children.reverse()
+    }
   }
 
   /******************
@@ -514,6 +630,48 @@ export class TreeNode {
     }
   }
 }
-
 // class Tree is an alias for TreeNode
 export class Tree extends TreeNode {}
+
+//* Given an array with elements which are an unknown mixture of strings (TreeNode names) and TreeNodes, find the corresponding TreeNode objects for any string elements, returning an array of TreeNodes */
+const _translateNodes = (root: TreeNode, nodes: Array<TreeNode | string>) => {
+    let name2node: {[key: string]: TreeNode | null} = {}
+
+    nodes.forEach((node) => {
+      if (typeof node === 'string') {
+        name2node[node] = null
+      }})
+
+
+      if (Object.keys(name2node).length > 0) {
+        root.traverse().forEach((n: TreeNode) => {
+          if (n.name in Object.keys(name2node)) {
+            if (name2node[n.name] !== null) {
+              throw new TreeError('Ambiguous node name: ' + n.name) 
+            } else {
+                name2node[n.name] = n
+              }
+          }
+        })
+      }
+
+      if (Object.values(name2node).includes(null)) {
+        let missing = Object.keys(name2node).filter((k) => name2node[k] === null)
+        throw new TreeError("Node name(s) not found: " + missing.join(', '))
+      }
+
+      let validNodes: TreeNode[] = []
+      nodes.forEach((node) => {
+        if (node instanceof TreeNode) {
+          validNodes.push(node)
+        } else if (!(typeof node === 'string')) {
+          throw new TreeError('Invalid node type: ' + node)
+        }
+      })
+
+      //@ts-ignore if there were any null values in name2node, we would have thrown an error
+      validNodes += Object.values(name2node)
+      return validNodes
+      }
+    
+
