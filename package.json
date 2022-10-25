@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chanzuckerberg/phylo-js.git"
+    "url": "git+https://github.com/chanzuckerberg/mini-ete3-js.git"
   },
   "devDependencies": {
     "@types/jest": "^29.1.2",
@@ -35,9 +35,9 @@
   "author": "Sidney Bell",
   "license": "GPL3",
   "bugs": {
-    "url": "https://github.com/chanzuckerberg/phylo-js/issues"
+    "url": "https://github.com/chanzuckerberg/mini-ete3-js/issues"
   },
-  "homepage": "https://github.com/chanzuckerberg/phylo-js#readme",
+  "homepage": "https://github.com/chanzuckerberg/mini-ete3-js#readme",
   "dependencies": {
     "lodash": "^4.17.21"
   }
