@@ -1,4 +1,4 @@
-# phylo-js
+# mini-ete3-js
 
 ## a partial port of ETE3 toolkit to typescript to enable phylogenetics in the browser
 
